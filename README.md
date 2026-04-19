@@ -6,8 +6,8 @@ As a junior Analyst I will be showing the CEO the insights that would assist the
 Bright TV — Consumption Analysis & Growth Strategy
 
 Presented by: Masego Serote  
-**Location: Johannesburg, South Africa  
-**Contact: msgpl117@gmail.com | +27 93-093-5634
+Location: Johannesburg, South Africa  
+Contact: msgpl117@gmail.com | +27 93-093-5634
 
 ---
 
@@ -60,7 +60,7 @@ Recommendations
 
 Growth Strategy
 
- Acquire New Users
+Acquire New Users
 - Telecom Partnerships — Bundle data + streaming with mobile providers
 - Device Pre-installs — Get Bright TV pre-loaded on affordable smartphones
 - Referral Programs — Reward users for bringing friends onto the platform
@@ -74,10 +74,19 @@ Retain & Grow Existing Users
 
 ---
 
-
 Conclusion
 
 Bright TV's consumption is shaped by time of day, content type, and user habits. The biggest untapped opportunity lies in low-consumption days and underserved provinces. Growth will come from smarter engagement strategies, stronger acquisition channels, and a content approach that speaks to a broader South African audience.
+
+---
+
+Tools & Technologies
+
+- SQL ( Data cleaning & transformation)
+- Databricks
+- Excel
+- Canva ( Bright TV presentation)
+- Dashboard Power BI
 
 ---
 
