@@ -81,4 +81,4 @@ Bright TV's consumption is shaped by time of day, content type, and user habits.
 
 ---
 
- 2025 Masego Sereote — Bright TV Analysis
+ 2025 Masego Serote — Bright TV Analysis
