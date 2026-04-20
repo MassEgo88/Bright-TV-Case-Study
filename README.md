@@ -1,13 +1,11 @@
 # Bright-TV-Case-Study
 As a junior Analyst I will be showing the CEO the insights that would assist the Customer Value Management team in meeting this year's objective
 
-
-
 Bright TV — Consumption Analysis & Growth Strategy
 
 Presented by: Masego Serote  
-Location: Johannesburg, South Africa  
-Contact: msgpl117@gmail.com | +27 93-093-5634
++Location: Johannesburg, South Africa  
++Contact: msgpl117@gmail.com | +27 93-093-5634
 
 ---
 
@@ -23,7 +21,6 @@ Objectives
 - Understand user behaviour across age, gender, and demographic segments
 - Identify low-consumption gaps and underserved markets
 - Recommend strategies to increase engagement and platform growth
-
 
 Key Findings
 
@@ -60,7 +57,7 @@ Recommendations
 
 Growth Strategy
 
-Acquire New Users
++ Acquire New Users
 - Telecom Partnerships — Bundle data + streaming with mobile providers
 - Device Pre-installs — Get Bright TV pre-loaded on affordable smartphones
 - Referral Programs — Reward users for bringing friends onto the platform
