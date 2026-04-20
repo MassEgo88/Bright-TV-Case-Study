@@ -4,7 +4,7 @@
 
 ## Bright TV — Consumption Analysis & Growth Strategy
 
-## 👤 Author
+## Author
 
 **Masego Serote**
 📍 Johannesburg, South Africa
