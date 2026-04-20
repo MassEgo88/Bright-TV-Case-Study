@@ -2,7 +2,7 @@
 
 
 
-# Bright TV — Consumption Analysis & Growth Strategy
+## Bright TV — Consumption Analysis & Growth Strategy
 
 ## 👤 Author
 
@@ -145,7 +145,7 @@ Example visuals to include:
 
 ---
 
-## 🧠 Conclusion
+## Conclusion
 
 Bright TV’s growth is driven by **user behaviour, content timing, and regional engagement patterns**.
 
@@ -153,10 +153,10 @@ The biggest opportunity lies in **improving weekday engagement and expanding int
 
 ---
 
-## 📌 Project Status
+## Project Status
 
-✅ Completed
-🚀 Open to feedback and improvements
+Completed
+Open to feedback and improvements
 
 ---
 
