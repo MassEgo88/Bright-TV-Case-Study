@@ -142,6 +142,7 @@ Example visuals to include:
 * **Power BI** – Dashboard & visualisation
 * **Excel** – Data handling
 * **Canva** – Presentation design
+* **Lovable** - https://cuddle-dash-spark.git
 
 ---
 
