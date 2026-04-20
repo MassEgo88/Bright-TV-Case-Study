@@ -88,10 +88,24 @@ AND Surname IS NULL
 CREATE OR REPLACE TABLE brighttv_analysis_long AS SELECT
 v.UserID,
 
-p.Name, p.Surname, p.Email, p.Gender, p.Race, p.Age, p.Age_Group, p.Province,
+p.Name, 
+p.Surname, 
+p.Email, 
+p.Gender, 
+p.Race, 
+p.Age, 
+p.Age_Group, 
+p.Province,
 p.Social_Media_Handle,
 
-v.Channel, v.RecordDate_UTC, v.RecordDate_CAT, v.View_Date, v.View_Time, v.Duration_Seconds, v.Duration_Minutes, v.ID_Match_Flag,
+v.Channel, 
+v.RecordDate_UTC, 
+v.RecordDate_CAT,
+v.View_Date, 
+v.View_Time, 
+v.Duration_Seconds, 
+v.Duration_Minutes, 
+v.ID_Match_Flag,
 DATE_FORMAT(v.View_Date, 'EEEE') AS Day_Name, 
   CASE
 WHEN DATE_FORMAT(v.View_Date, 'u') IN ('6', '7') THEN 'Weekend'
