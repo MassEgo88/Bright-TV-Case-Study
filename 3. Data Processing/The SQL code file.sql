@@ -13,7 +13,9 @@ FROM tv_profile LIMIT 10;
 
 DESCRIBE tv_profile;
 
----3.Clean the viewer table in Databricks SQL
+----------------------------------------------------------------------------------------------------------------------
+---3.Clean the viewer table 
+----------------------------------------------------------------------------------------------------------------------
 
 CREATE OR REPLACE TABLE tv_viewer_clean AS SELECT
 CAST(COALESCE(`userid`, UserID) AS BIGINT) AS UserID,
@@ -51,7 +53,9 @@ CREATE OR REPLACE TABLE tv_viewer_analysis_ready AS SELECT *
 FROM tv_viewer_clean WHERE Channel IS NOT NULL
 AND RecordDate_CAT IS NOT NULL AND Duration_Seconds > 0;
 
-----5.Clean the profile table in Databricks SQL
+---------------------------------------------------------------------------------------------------------------------------------
+----5.Clean the profile table 
+---------------------------------------------------------------------------------------------------------------------------------
 
 CREATE OR REPLACE TABLE tv_profile_clean AS SELECT
 CAST(UserID AS BIGINT) AS UserID,
@@ -83,7 +87,9 @@ CAST(Age AS INT) = 0 AND Name IS NULL
 AND Surname IS NULL
 );
 
----6.Join the clean tables
+----------------------------------------------------------------------------------------------------------------------------------
+---6. LEFT Join to the clean tables
+----------------------------------------------------------------------------------------------------------------------------------
 
 CREATE OR REPLACE TABLE brighttv_analysis_long AS SELECT
 v.UserID,
@@ -123,7 +129,9 @@ FROM tv_viewer_analysis_ready v
 LEFT JOIN tv_profile_clean p
 ON v.UserID = p.UserID;
 
+---------------------------------------------------------------------------------------------------------------------------------------------------
 ---7.Final table with no important nulls
+----------------------------------------------------------------------------------------------------------------------------------------------------
 
 CREATE OR REPLACE TABLE brighttv_analysis_clean AS 
 SELECT *
@@ -136,6 +144,7 @@ AND Race IS NOT NULL
 AND Email IS NOT NULL;
 
 ---8.Quick checks after cleaning
+
 SELECT COUNT(*) AS viewer_rows 
 FROM tv_viewer_clean; 
 
@@ -153,7 +162,9 @@ SELECT COUNT(*) AS zero_duration_rows
 FROM tv_viewer_clean
 WHERE Duration_Seconds = 0;
 
-----9.Example analysis queries
+--------------------------------------------------------------------------------------------------------------------
+----9.Example analysis queries in DESC order
+---------------------------------------------------------------------------------------------------------------------
 
 SELECT
 Day_Name,
