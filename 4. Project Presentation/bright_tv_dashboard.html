@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bright TV — Analytics Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07081a;
+    --bg2: #0d0f2b;
+    --card: #111330;
+    --card2: #161840;
+    --lime: #c8f542;
+    --purple: #7c3aed;
+    --purple2: #a855f7;
+    --blue: #3b82f6;
+    --orange: #f97316;
+    --text: #e8eaf6;
+    --muted: #6b7280;
+    --border: rgba(124,58,237,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(124,58,237,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 10% 80%, rgba(59,130,246,0.08) 0%, transparent 50%);
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--purple);
+    clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: white;
+    font-family: 'Syne', sans-serif;
+  }
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+  .logo-text span { color: var(--lime); }
+  .header-meta {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .header-meta strong { color: var(--lime); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 8px 16px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    color: var(--muted);
+    border: none;
+    background: none;
+  }
+  .tab.active {
+    background: var(--purple);
+    color: white;
+    font-weight: 600;
+  }
+  .tab:hover:not(.active) { color: var(--text); background: var(--card2); }
+
+  /* PANELS */
+  .panel { display: none; animation: fadeIn 0.3s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* KPI CARDS */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .kpi-card:hover { transform: translateY(-2px); }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--purple), var(--purple2));
+  }
+  .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .kpi-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--lime); line-height: 1; }
+  .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .kpi-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+  .badge-up { background: rgba(200,245,66,0.15); color: var(--lime); }
+  .badge-down { background: rgba(249,115,22,0.15); color: var(--orange); }
+
+  /* CHART GRID */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    transition: transform 0.2s;
+  }
+  .chart-card:hover { transform: translateY(-2px); }
+  .chart-card.wide { grid-column: 1 / -1; }
+  .chart-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 4px;
+  }
+  .chart-insight {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .chart-insight strong { color: var(--lime); }
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* INSIGHT BOX */
+  .insight-box {
+    background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(59,130,246,0.08));
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .insight-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .insight-text { font-size: 13px; line-height: 1.6; color: #c4c9e8; }
+  .insight-text strong { color: var(--lime); }
+
+  /* GAP CARDS */
+  .gap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .gap-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .gap-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .gap-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .gap-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
+  .gap-bar-wrap { background: rgba(255,255,255,0.06); border-radius: 4px; height: 6px; margin: 8px 0; }
+  .gap-bar { height: 6px; border-radius: 4px; }
+  .gap-stats { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+
+  /* RECO CARDS */
+  .reco-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .reco-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .reco-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: rgba(124,58,237,0.3);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .reco-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--lime);
+    margin-bottom: 8px;
+  }
+  .reco-desc { font-size: 13px; color: #9ca3af; line-height: 1.6; }
+  .reco-tag {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .tag-quick { background: rgba(200,245,66,0.12); color: var(--lime); border: 1px solid rgba(200,245,66,0.2); }
+  .tag-mid { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+  .tag-long { background: rgba(124,58,237,0.12); color: var(--purple2); border: 1px solid rgba(124,58,237,0.2); }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--purple2);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* PROVINCE TABLE */
+  .province-table { width: 100%; border-collapse: collapse; }
+  .province-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    font-weight: 600;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .province-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .province-table tr:last-child td { border-bottom: none; }
+  .province-table tr:hover td { background: rgba(124,58,237,0.05); }
+  .bar-inline { display: flex; align-items: center; gap: 8px; }
+  .bar-mini { height: 6px; border-radius: 3px; background: var(--purple); }
+  .status-pill {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .status-high { background: rgba(200,245,66,0.12); color: var(--lime); }
+  .status-low { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .status-mid { background: rgba(59,130,246,0.12); color: #60a5fa; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">B</div>
+    <div class="logo-text">Bright<span>TV</span> <span style="font-weight:400;color:var(--muted);font-size:14px;margin-left:4px">Analytics</span></div>
+  </div>
+  <div class="header-meta">Presented by <strong>Masego Serote</strong> · April 2026</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPanel('overview')">📊 Overview</button>
+  <button class="tab" onclick="showPanel('consumption')">📅 Consumption Trends</button>
+  <button class="tab" onclick="showPanel('demographics')">👥 Demographics</button>
+  <button class="tab" onclick="showPanel('geography')">🗺️ Geography</button>
+  <button class="tab" onclick="showPanel('recommendations')">💡 Recommendations</button>
+</div>
+
+<!-- ======================== OVERVIEW ======================== -->
+<div class="panel active" id="panel-overview">
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Top Day</div>
+      <div class="kpi-value">FRI</div>
+      <div class="kpi-sub">Highest weekly spike</div>
+      <span class="kpi-badge badge-up">↑ Peak</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Lowest Days</div>
+      <div class="kpi-value">TUE</div>
+      <div class="kpi-sub">Tue & Wed drop</div>
+      <span class="kpi-badge badge-down">↓ Opportunity</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Top Age Group</div>
+      <div class="kpi-value">25–34</div>
+      <div class="kpi-sub">50% of engagement</div>
+      <span class="kpi-badge badge-up">↑ Core</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Male vs Female</div>
+      <div class="kpi-value">86%</div>
+      <div class="kpi-sub">Male audience share</div>
+      <span class="kpi-badge badge-down">⚡ Gap</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Top Province</div>
+      <div class="kpi-value">GPT</div>
+      <div class="kpi-sub">Gauteng leads ~2,100</div>
+      <span class="kpi-badge badge-up">↑ Dominant</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Weekday Share</div>
+      <div class="kpi-value">60%</div>
+      <div class="kpi-sub">vs 40% weekends</div>
+      <span class="kpi-badge badge-up">↑ Driver</span>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-icon">💡</div>
+    <div class="insight-text">
+      <strong>Key Finding:</strong> Consumption peaks on Fridays and dips on Tuesdays & Wednesdays — these low days are the <strong>biggest opportunity for growth</strong>. 
+      Male users dominate at 86% vs 12% female, and Gauteng drives the largest provincial volume. 
+      The 25–34 age group leads engagement, followed by 18–24. North West, Free State, and Northern Cape are <strong>underserved markets ripe for expansion.</strong>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">Weekly Consumption Pattern</div>
+      <div class="chart-insight">Fridays spike highest; <strong>Tuesdays & Wednesdays are growth opportunities</strong></div>
+      <div class="chart-wrap"><canvas id="weeklyChart" height="200"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Audience by Gender</div>
+      <div class="chart-insight">Male viewers make up <strong>86%</strong> — female engagement is a major untapped segment</div>
+      <div class="chart-wrap"><canvas id="genderChart" height="200"></canvas></div>
+    </div>
+    <div class="chart-card wide">
+      <div class="chart-title">Consumption by Time of Day — Gender Split</div>
+      <div class="chart-insight">Male viewership dominates all time slots; <strong>Prime Time and Afternoon</strong> are the highest engagement windows</div>
+      <div class="chart-wrap"><canvas id="timeGenderChart" height="160"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== CONSUMPTION ======================== -->
+<div class="panel" id="panel-consumption">
+
+  <div class="section-label">Time-Based Patterns</div>
+
+  <div class="insight-box">
+    <div class="insight-icon">📅</div>
+    <div class="insight-text">
+      <strong>Consumption spikes on Fridays</strong> and drops sharply on Tuesdays and Wednesdays. 
+      Weekdays overall account for <strong>60% of total consumption</strong> vs 40% on weekends. 
+      Prime Time and Afternoon are the highest-value viewing windows across all genders.
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card wide">
+      <div class="chart-title">Average Daily Consumption by Day of Week</div>
+      <div class="chart-insight">Clear Friday peak; Tuesday & Wednesday dips = prime windows for push notifications and content drops</div>
+      <div class="chart-wrap"><canvas id="dailyBarChart" height="140"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Time of Day Breakdown — All Users</div>
+      <div class="chart-insight">Afternoon leads, followed by Morning and Prime Time</div>
+      <div class="chart-wrap"><canvas id="timeOfDayChart" height="220"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Weekday vs Weekend Split</div>
+      <div class="chart-insight">60% of consumption happens on weekdays — content strategy should not ignore Mon–Fri</div>
+      <div class="chart-wrap"><canvas id="wdWeChart" height="220"></canvas></div>
+    </div>
+    <div class="chart-card wide">
+      <div class="chart-title">Top Channels by Consumption Volume</div>
+      <div class="chart-insight">SuperSport Live Events and Trace TV drive the highest viewership; sports content is the dominant category</div>
+      <div class="chart-wrap"><canvas id="channelChart" height="160"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== DEMOGRAPHICS ======================== -->
+<div class="panel" id="panel-demographics">
+
+  <div class="section-label">Audience Segmentation</div>
+
+  <div class="insight-box">
+    <div class="insight-icon">👥</div>
+    <div class="insight-text">
+      The <strong>25–34 age group drives ~50% of engagement</strong>, followed by 18–24 who favour youth/entertainment content. 
+      Male users account for <strong>86% of viewership</strong> vs 12% female — a significant gender gap. 
+      Black audiences are the largest racial segment (2,913), with Coloured and White segments as growth opportunities.
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">Engagement by Age Group</div>
+      <div class="chart-insight">25–34 is the core demographic; 18–24 and 35–44 are secondary targets</div>
+      <div class="chart-wrap"><canvas id="ageChart" height="220"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Gender Distribution</div>
+      <div class="chart-insight">Female engagement at only 12% signals a major content & marketing gap</div>
+      <div class="chart-wrap"><canvas id="genderPieChart" height="220"></canvas></div>
+    </div>
+    <div class="chart-card wide">
+      <div class="chart-title">Consumption by Race — Weekday vs Weekend</div>
+      <div class="chart-insight">Black audiences lead in total volume; Indian/Asian and Other segments show relatively lower weekend engagement</div>
+      <div class="chart-wrap"><canvas id="raceChart" height="160"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-label">Gender Gap Analysis</div>
+  <div class="gap-grid">
+    <div class="gap-card">
+      <div class="gap-header"><div class="gap-dot" style="background:#f97316"></div><div class="gap-title">Male Viewers</div></div>
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--lime)">86%</div>
+      <div class="gap-bar-wrap"><div class="gap-bar" style="width:86%;background:var(--orange)"></div></div>
+      <div class="gap-stats"><span>5,784 views</span><span>All time slots</span></div>
+    </div>
+    <div class="gap-card">
+      <div class="gap-header"><div class="gap-dot" style="background:#3b82f6"></div><div class="gap-title">Female Viewers</div></div>
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#60a5fa">12%</div>
+      <div class="gap-bar-wrap"><div class="gap-bar" style="width:12%;background:#3b82f6"></div></div>
+      <div class="gap-stats"><span>835 views</span><span>Low across all slots</span></div>
+    </div>
+    <div class="gap-card">
+      <div class="gap-header"><div class="gap-dot" style="background:#6b7280"></div><div class="gap-title">Unclassified</div></div>
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--muted)">2%</div>
+      <div class="gap-bar-wrap"><div class="gap-bar" style="width:2%;background:#6b7280"></div></div>
+      <div class="gap-stats"><span>156 views</span><span>Null/Unknown</span></div>
+    </div>
+    <div class="gap-card" style="border-color:rgba(200,245,66,0.3)">
+      <div class="gap-header"><div class="gap-dot" style="background:var(--lime)"></div><div class="gap-title">⚡ Growth Opportunity</div></div>
+      <div style="font-size:13px;color:#9ca3af;line-height:1.7;margin-top:6px">
+        Investing in female-targeted content (lifestyle, drama, reality) could unlock a <strong style="color:var(--lime)">significant untapped audience segment.</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== GEOGRAPHY ======================== -->
+<div class="panel" id="panel-geography">
+
+  <div class="section-label">Provincial Breakdown</div>
+
+  <div class="insight-box">
+    <div class="insight-icon">🗺️</div>
+    <div class="insight-text">
+      <strong>Gauteng dominates</strong> with ~2,150 views (weekday + weekend). 
+      <strong>North West, Free State, Northern Cape, and Unknown</strong> are the lowest-performing provinces — representing the biggest geographic growth opportunities. 
+      Western Cape and KwaZulu-Natal are strong secondary markets.
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card wide">
+      <div class="chart-title">Provincial Consumption — Weekday vs Weekend</div>
+      <div class="chart-insight">Gauteng leads by a wide margin; low-consumption provinces need targeted campaigns</div>
+      <div class="chart-wrap"><canvas id="provinceChart" height="180"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-label">Province Performance Table</div>
+  <div class="chart-card">
+    <table class="province-table">
+      <thead>
+        <tr>
+          <th>Province</th>
+          <th>Weekday</th>
+          <th>Weekend</th>
+          <th>Total</th>
+          <th>Share</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="province-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ======================== RECOMMENDATIONS ======================== -->
+<div class="panel" id="panel-recommendations">
+
+  <div class="section-label">Fixing Low-Day Consumption</div>
+
+  <div class="reco-grid">
+    <div class="reco-card">
+      <div class="reco-number">01</div>
+      <div class="reco-title">Strategic Content Drops</div>
+      <div class="reco-desc">Release premium episodes or trending content on Tuesdays and Wednesdays to drive viewership on the lowest-traffic days. Example: "New episode drops every Tuesday."</div>
+      <span class="reco-tag tag-quick">Quick Win</span>
+    </div>
+    <div class="reco-card">
+      <div class="reco-number">02</div>
+      <div class="reco-title">Targeted Push Notifications</div>
+      <div class="reco-desc">Send personalized "Don't miss out" alerts during low-activity windows. Time notifications to match each user's peak viewing hour for maximum open rates.</div>
+      <span class="reco-tag tag-quick">Quick Win</span>
+    </div>
+    <div class="reco-card">
+      <div class="reco-number">03</div>
+      <div class="reco-title">Personalized Recommendations</div>
+      <div class="reco-desc">Use viewing history to surface relevant content. "Because you watched…" style suggestions increase session time and reduce churn during low-engagement periods.</div>
+      <span class="reco-tag tag-mid">Mid-term</span>
+    </div>
+    <div class="reco-card">
+      <div class="reco-number">04</div>
+      <div class="reco-title">Gamification & Rewards</div>
+      <div class="reco-desc">Introduce watch streaks, badges, and loyalty points to build habitual viewing behaviour. Users who maintain streaks are significantly less likely to churn.</div>
+      <span class="reco-tag tag-mid">Mid-term</span>
+    </div>
+    <div class="reco-card">
+      <div class="reco-number">05</div>
+      <div class="reco-title">Free Data Hours / Promotions</div>
+      <div class="reco-desc">Offer zero-rated streaming windows during low-traffic hours (e.g., Tuesday nights). This is particularly effective in the South African market where data cost is a barrier.</div>
+      <span class="reco-tag tag-quick">Quick Win</span>
+    </div>
+    <div class="reco-card">
+      <div class="reco-number">06</div>
+      <div class="reco-title">Female-Focused Content</div>
+      <div class="reco-desc">With female viewership at only 12%, investing in lifestyle, drama, and reality content creates a major new audience segment. Target female users during afternoon peak hours.</div>
+      <span class="reco-tag tag-long">Strategic</span>
+    </div>
+  </div>
+
+  <div class="section-label">Growing the User Base</div>
+
+  <div class="reco-grid">
+    <div class="reco-card">
+      <div class="reco-number">07</div>
+      <div class="reco-title">Telecom Partnerships</div>
+      <div class="reco-desc">Bundle Bright TV with mobile data packages (MTN, Vodacom, Telkom). Device pre-installs on entry-level Android phones can unlock the low-consumption provinces.</div>
+      <span class="reco-tag tag-long">Strategic</span>
+    </div>
+    <div class="reco-card">
+      <div class="reco-number">08</div>
+      <div class="reco-title">Referral Programme</div>
+      <div class="reco-desc">"Invite a friend, earn rewards" — word-of-mouth is the highest-converting acquisition channel in SA. Tie rewards to data vouchers or extended free access.</div>
+      <span class="reco-tag tag-mid">Mid-term</span>
+    </div>
+    <div class="reco-card">
+      <div class="reco-number">09</div>
+      <div class="reco-title">Local & Regional Content</div>
+      <div class="reco-desc">Invest in shows from low-consumption provinces (North West, Free State). Local language content is the single biggest driver of new user acquisition in SA streaming markets.</div>
+      <span class="reco-tag tag-long">Strategic</span>
+    </div>
+    <div class="reco-card">
+      <div class="reco-number">10</div>
+      <div class="reco-title">Social Media Clips</div>
+      <div class="reco-desc">Distribute short clips on TikTok, Instagram Reels, and Facebook to drive app installs. The 18–24 age group (2nd largest segment) is primarily reachable through short-form social content.</div>
+      <span class="reco-tag tag-quick">Quick Win</span>
+    </div>
+    <div class="reco-card">
+      <div class="reco-number">11</div>
+      <div class="reco-title">Better Onboarding</div>
+      <div class="reco-desc">First-day recommendations dramatically impact 30-day retention. Show new users 5 personalised picks immediately after sign-up based on their age and location.</div>
+      <span class="reco-tag tag-mid">Mid-term</span>
+    </div>
+    <div class="reco-card">
+      <div class="reco-number">12</div>
+      <div class="reco-title">Habit-Building Scheduling</div>
+      <div class="reco-desc">Daily or weekly episodic shows create routine viewing patterns. A 5-night serialised drama turns casual viewers into loyal subscribers.</div>
+      <span class="reco-tag tag-long">Strategic</span>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:4px 0">
+    <span><span class="reco-tag tag-quick">Quick Win</span> = 0–4 weeks</span>
+    <span><span class="reco-tag tag-mid">Mid-term</span> = 1–3 months</span>
+    <span><span class="reco-tag tag-long">Strategic</span> = 3–6 months</span>
+  </div>
+</div>
+
+<script>
+// ─── Tab switching ───────────────────────────────────────────────────────────
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ─── Chart defaults ──────────────────────────────────────────────────────────
+Chart.defaults.color = '#6b7280';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 12;
+
+const gridColor = 'rgba(255,255,255,0.05)';
+const LIME = '#c8f542';
+const PURPLE = '#7c3aed';
+const PURPLE2 = '#a855f7';
+const BLUE = '#3b82f6';
+const ORANGE = '#f97316';
+
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const dayConsumption = [310, 295, 210, 220, 285, 380, 340];
+
+const provinces = [
+  { name: 'Gauteng',        weekday: 1500, weekend: 650 },
+  { name: 'Western Cape',   weekday: 780,  weekend: 410 },
+  { name: 'KwaZulu-Natal',  weekday: 500,  weekend: 220 },
+  { name: 'Eastern Cape',   weekday: 390,  weekend: 185 },
+  { name: 'Mpumalanga',     weekday: 450,  weekend: 215 },
+  { name: 'Limpopo',        weekday: 480,  weekend: 150 },
+  { name: 'Unknown',        weekday: 100,  weekend: 40  },
+  { name: 'Northern Cape',  weekday: 130,  weekend: 50  },
+  { name: 'North West',     weekday: 190,  weekend: 90  },
+  { name: 'Free State',     weekday: 180,  weekend: 80  },
+];
+
+// ─── Province table ──────────────────────────────────────────────────────────
+const tbody = document.getElementById('province-tbody');
+const totalAll = provinces.reduce((s, p) => s + p.weekday + p.weekend, 0);
+const maxTotal = Math.max(...provinces.map(p => p.weekday + p.weekend));
+provinces.slice().sort((a,b)=>(b.weekday+b.weekend)-(a.weekday+a.weekend)).forEach(p => {
+  const total = p.weekday + p.weekend;
+  const share = ((total / totalAll) * 100).toFixed(1);
+  const barW = Math.round((total / maxTotal) * 100);
+  let statusClass, statusLabel;
+  if (total > 1500) { statusClass='status-high'; statusLabel='High'; }
+  else if (total > 400) { statusClass='status-mid'; statusLabel='Medium'; }
+  else { statusClass='status-low'; statusLabel='Low ⚡'; }
+  tbody.innerHTML += `<tr>
+    <td style="font-weight:500;color:#e8eaf6">${p.name}</td>
+    <td>${p.weekday.toLocaleString()}</td>
+    <td>${p.weekend.toLocaleString()}</td>
+    <td>
+      <div class="bar-inline">
+        <div class="bar-mini" style="width:${barW}px"></div>
+        <span style="font-weight:600;color:var(--lime)">${total.toLocaleString()}</span>
+      </div>
+    </td>
+    <td style="color:var(--muted)">${share}%</td>
+    <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
+  </tr>`;
+});
+
+// ─── Charts ──────────────────────────────────────────────────────────────────
+// 1. Weekly overview line
+new Chart(document.getElementById('weeklyChart'), {
+  type: 'line',
+  data: {
+    labels: days,
+    datasets: [{
+      label: 'Views',
+      data: dayConsumption,
+      borderColor: LIME,
+      backgroundColor: 'rgba(200,245,66,0.08)',
+      borderWidth: 2.5,
+      pointBackgroundColor: dayConsumption.map((v,i) => v===Math.max(...dayConsumption)?LIME:(v===Math.min(...dayConsumption)?ORANGE:PURPLE2)),
+      pointRadius: dayConsumption.map((v,i) => (v===Math.max(...dayConsumption)||v===Math.min(...dayConsumption))?6:3),
+      fill: true, tension: 0.4,
+    }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor }, beginAtZero: false } } }
+});
+
+// 2. Gender donut
+new Chart(document.getElementById('genderChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Male (86%)', 'Female (12%)', 'Unknown (2%)'],
+    datasets: [{ data: [86, 12, 2], backgroundColor: [ORANGE, BLUE, '#374151'], borderWidth: 0, hoverOffset: 8 }]
+  },
+  options: { plugins: { legend: { position: 'bottom', labels: { padding: 16, color: '#9ca3af', font: { size: 12 } } } }, cutout: '65%' }
+});
+
+// 3. Time + gender grouped bar
+new Chart(document.getElementById('timeGenderChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Afternoon','Late Night','Morning','Night','Prime Time'],
+    datasets: [
+      { label: 'Male', data: [1880,814,910,779,1401], backgroundColor: ORANGE },
+      { label: 'Female', data: [257,100,131,122,225], backgroundColor: BLUE },
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'top', labels: { color: '#9ca3af', padding: 16 } } },
+    scales: { x: { grid: { color: gridColor }, stacked: false }, y: { grid: { color: gridColor }, stacked: false } }
+  }
+});
+
+// 4. Daily bar
+new Chart(document.getElementById('dailyBarChart'), {
+  type: 'bar',
+  data: {
+    labels: days,
+    datasets: [{
+      data: dayConsumption,
+      backgroundColor: dayConsumption.map((v,i) => v===Math.max(...dayConsumption)?LIME:(v<=220?ORANGE:PURPLE)),
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } }
+  }
+});
+
+// 5. Time of day
+new Chart(document.getElementById('timeOfDayChart'), {
+  type: 'polarArea',
+  data: {
+    labels: ['Afternoon','Late Night','Morning','Night','Prime Time'],
+    datasets: [{ data: [2183,942,1073,917,1660], backgroundColor: [LIME+'cc',PURPLE+'cc',BLUE+'cc',ORANGE+'cc',PURPLE2+'cc'], borderWidth: 0 }]
+  },
+  options: { plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 11 }, padding: 10 } } }, scales: { r: { grid: { color: gridColor }, ticks: { display: false } } } }
+});
+
+// 6. WD vs WE doughnut
+new Chart(document.getElementById('wdWeChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Weekday (60%)', 'Weekend (40%)'],
+    datasets: [{ data: [60, 40], backgroundColor: [PURPLE, ORANGE], borderWidth: 0, hoverOffset: 8 }]
+  },
+  options: { plugins: { legend: { position: 'bottom', labels: { padding: 16, color: '#9ca3af' } } }, cutout: '65%' }
+});
+
+// 7. Channel bar
+new Chart(document.getElementById('channelChart'), {
+  type: 'bar',
+  data: {
+    labels: ['SuperSport Live','Trace TV','Channel O','Africa Magic','Cartoon Net','Boomerang','E! Entertain','CNN','kykNET','M-Net'],
+    datasets: [
+      { label: 'Male', data: [320, 290, 260, 240, 220, 195, 180, 160, 80, 75], backgroundColor: ORANGE, borderRadius: 4 },
+      { label: 'Female', data: [15, 20, 22, 30, 25, 18, 22, 18, 10, 12], backgroundColor: BLUE, borderRadius: 4 },
+    ]
+  },
+  options: {
+    indexAxis: 'x',
+    plugins: { legend: { position: 'top', labels: { color: '#9ca3af', padding: 16 } } },
+    scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } }
+  }
+});
+
+// 8. Age groups
+new Chart(document.getElementById('ageChart'), {
+  type: 'bar',
+  data: {
+    labels: ['18–24','25–34','35–44','45–54','55+','Under 18'],
+    datasets: [{
+      data: [28, 50, 12, 6, 3, 1],
+      backgroundColor: [PURPLE2, LIME, BLUE, ORANGE, '#6b7280', '#374151'],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: { x: { grid: { color: gridColor }, ticks: { callback: v => v+'%' } }, y: { grid: { color: gridColor } } }
+  }
+});
+
+// 9. Gender pie
+new Chart(document.getElementById('genderPieChart'), {
+  type: 'pie',
+  data: {
+    labels: ['Male','Female','Unknown'],
+    datasets: [{ data: [86, 12, 2], backgroundColor: [ORANGE, BLUE, '#374151'], borderWidth: 0, hoverOffset: 8 }]
+  },
+  options: { plugins: { legend: { position: 'bottom', labels: { padding: 16, color: '#9ca3af' } } } }
+});
+
+// 10. Race chart
+new Chart(document.getElementById('raceChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Black','Coloured','Indian/Asian','Other','Unknown','White'],
+    datasets: [
+      { label: 'Weekday', data: [2054, 731, 649, 88, 564, 664], backgroundColor: PURPLE, borderRadius: 4 },
+      { label: 'Weekend', data: [859, 347, 269, 28, 264, 286], backgroundColor: ORANGE, borderRadius: 4 },
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'top', labels: { color: '#9ca3af', padding: 16 } } },
+    scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } }
+  }
+});
+
+// 11. Province chart
+new Chart(document.getElementById('provinceChart'), {
+  type: 'bar',
+  data: {
+    labels: provinces.map(p => p.name),
+    datasets: [
+      { label: 'Weekday', data: provinces.map(p => p.weekday), backgroundColor: PURPLE, borderRadius: 4 },
+      { label: 'Weekend', data: provinces.map(p => p.weekend), backgroundColor: ORANGE, borderRadius: 4 },
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'top', labels: { color: '#9ca3af', padding: 16 } } },
+    scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } }
+  }
+});
+</script>
+</body>
+</html>
