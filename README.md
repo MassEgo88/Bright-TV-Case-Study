@@ -1,8 +1,6 @@
-# Bright-TV-Case-Study
+# Bright TV — Consumption Analysis & Growth Strategy
 
 
-
-## Bright TV — Consumption Analysis & Growth Strategy
 
 **Presented by:** Masego Serote
 📍 Johannesburg, South Africa
@@ -54,11 +52,11 @@ The dashboard showcases dynamic visualizations of:
 
 ## Recommendations
 
-* Introduce **targeted content releases** on low-engagement days
+* Expand content targeting underperforming regions 
 * Use **personalized recommendations** to increase watch time
 * Launch **regional campaigns** in underperforming provinces
-* Implement **loyalty or reward programs** to retain active users
-* Optimize content strategy based on high-performing categories
+* Retain power users with loyalty strategies  
+* Invest in acquisition campaigns to grow user base  
 
 ---
 
@@ -75,9 +73,11 @@ The dashboard showcases dynamic visualizations of:
 
 This analysis provides Bright TV with:
 
-* A clearer understanding of user engagement patterns
-* Data-backed strategies to increase consumption
-* Insights to guide content and marketing decisions
+Potential Impact
+
+* Increase active users by 15–25%  
+* Improve retention of high-value users  
+* Unlock growth in underperforming regions  
 * A foundation for scaling user growth initiatives
 
 ---
